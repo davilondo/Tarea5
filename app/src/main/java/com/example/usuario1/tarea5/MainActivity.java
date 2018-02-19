@@ -3,6 +3,7 @@ package com.example.usuario1.tarea5;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
     private Menu menu;
@@ -19,5 +20,12 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.borrar:
+                
+                break;
+        }
+    }
 }
