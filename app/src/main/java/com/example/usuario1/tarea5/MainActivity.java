@@ -1,5 +1,6 @@
 package com.example.usuario1.tarea5;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -24,8 +25,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.borrar:
-                
-                break;
+                return true;
+            case R.id.marcar:
+                Intent i=new Intent(this,MapsActivity.class);
+                startActivityForResult(i,0);
+                return true;
+
         }
+        return true;
     }
 }
