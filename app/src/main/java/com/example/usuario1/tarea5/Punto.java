@@ -1,10 +1,12 @@
 package com.example.usuario1.tarea5;
 
+import java.io.Serializable;
+
 /**
  * Created by Usuario1 on 23/02/2018.
  */
 
-public class Punto {
+public class Punto implements Serializable{
     private int id;
     private String nombre;
     private String coorx;
@@ -71,4 +73,8 @@ public class Punto {
         this.visitado = visitado;
     }
 
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

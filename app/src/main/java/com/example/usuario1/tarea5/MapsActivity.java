@@ -2,7 +2,9 @@ package com.example.usuario1.tarea5;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
@@ -15,25 +17,33 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.io.IOException;
+
+import static java.lang.Thread.sleep;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private LocationManager location;
     private Location loc;
+    private Geocoder geo;
+    private Punto punto;
     
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this.getParent(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PackageManager.PERMISSION_GRANTED);
-
-
+        while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PackageManager.PERMISSION_GRANTED);
+            try {
+                sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         location=(LocationManager) getSystemService(Context.LOCATION_SERVICE) ;
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -41,6 +51,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         loc=location.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        geo=new Geocoder(this);
+        if (getIntent().getExtras()!=null){
+            punto=(Punto) getIntent().getExtras().getSerializable("Punto");
+        }
     }
 
 
@@ -56,10 +70,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        if (punto!=null){
+            //Se asigna una location con las coordenandas del punto
+            Location loc = new Location(LocationManager.GPS_PROVIDER);
+            loc.setLatitude(Double.parseDouble(punto.getCoorx()));
+            loc.setLongitude(Double.parseDouble(punto.getCoory()));
+            Marker mark = null;
+            //Se crea un marcador y se añade a la lista
+            if (punto.isVisitado()){
+                mark = mMap.addMarker(new MarkerOptions().position(new LatLng(loc.getLatitude(), loc.getLongitude())).title(punto.getNombre()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+            }
+            else{
+                mark = mMap.addMarker(new MarkerOptions().position(new LatLng(loc.getLatitude(), loc.getLongitude())).title(punto.getNombre()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+            }
+            mark.setTag(punto);
+        }
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener(){
             @Override
             public void onMapLongClick(LatLng latLng) {
-                mMap.addMarker(new MarkerOptions().position(latLng).title("PRUEBA").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                try {
+                    Punto p=new Punto((geo.getFromLocation(latLng.latitude,latLng.longitude,1).get(0).getAddressLine(0)),String.valueOf(latLng.latitude),String.valueOf(latLng.longitude),false);
+                    Intent intent=getIntent();
+                    intent.putExtra("Punto",p);
+                    setResult(RESULT_OK,intent);
+                    finish();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             }
         });
