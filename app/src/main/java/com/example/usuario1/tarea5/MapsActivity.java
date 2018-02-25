@@ -37,6 +37,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        //mientras no se tengan permisos de ubicacion se le pediran al usuario
         while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PackageManager.PERMISSION_GRANTED);
             try {
@@ -45,14 +46,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 e.printStackTrace();
             }
         }
-        location=(LocationManager) getSystemService(Context.LOCATION_SERVICE) ;
+        location=(LocationManager) getSystemService(Context.LOCATION_SERVICE) ;//clase con la que se administra todo lo relacionado con los servicios de ubicacion
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        loc=location.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        geo=new Geocoder(this);
-        if (getIntent().getExtras()!=null){
+        loc=location.getLastKnownLocation(LocationManager.GPS_PROVIDER);//se obtiene la ultima localizacion conocida y se almacena en un objeto Location
+        geo=new Geocoder(this);//clase que devolvera datos de una localizacion dada
+        if (getIntent().getExtras()!=null){//si la actividad tiene extras tendra un punto a guardar en la base de datos
             punto=(Punto) getIntent().getExtras().getSerializable("Punto");
         }
     }
@@ -69,7 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
+        mMap = googleMap;//variable relacionada con el mapa del layout
         if (punto!=null){
             //Se asigna una location con las coordenandas del punto
             Location loc = new Location(LocationManager.GPS_PROVIDER);
@@ -85,13 +86,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             mark.setTag(punto);
         }
+        //escuchador de una pulsacion larga sobre el mapa almacenara la ubicacion en un objeto punto y lo pasara a la actividad principal
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener(){
             @Override
             public void onMapLongClick(LatLng latLng) {
                 try {
-                    Punto p=new Punto((geo.getFromLocation(latLng.latitude,latLng.longitude,1).get(0).getAddressLine(0)),String.valueOf(latLng.latitude),String.valueOf(latLng.longitude),false);
+                    Punto p=new Punto((geo.getFromLocation(latLng.latitude,latLng.longitude,1).get(0).getAddressLine(0)),String.valueOf(latLng.latitude),String.valueOf(latLng.longitude),false);//objeto punto con la ubicacion pulsada
                     Intent intent=getIntent();
-                    intent.putExtra("Punto",p);
+                    intent.putExtra("Punto",p);//se agrega el punto al intent que ha lanzado esta activity
                     setResult(RESULT_OK,intent);
                     finish();
 
